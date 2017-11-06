@@ -1,0 +1,62 @@
+<html>
+<head>
+  <meta charset=utf-8 />
+  <title>Cook Cty Current Parcel</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  //
+  <!-- Load Leaflet from CDN-->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.1.0/dist/leaflet.css"
+   />
+  <script src="https://unpkg.com/leaflet@1.1.0/dist/leaflet-src.js"
+   ></script>
+
+  <!-- Load Esri Leaflet from CDN -->
+  <script src="https://unpkg.com/esri-leaflet@2.1.1"></script>
+
+
+  <!-- Esri Leaflet Geocoder -->
+    <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@2.2.6/dist/esri-leaflet-geocoder.css">
+    <script src="https://unpkg.com/esri-leaflet-geocoder@2.2.6"></script>
+
+  <style>
+    body { margin:0; padding:0; }
+    #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script>
+  // Evanston would be [42.05247, -87.69087]
+  // Lakeview would be [41.942800, -87.671990]
+  var map = L.map('map').setView([42.05247, -87.69087], 18);
+
+  L.esri.basemapLayer('Streets').addTo(map);
+  var parcel = L.esri.featureLayer({
+    url: 'http://cookviewer1.cookcountyil.gov/ArcGIS/rest/services/cookElectnSrvc/MapServer/24',
+    useCors: false
+  }).addTo(map);
+
+  parcel.bindPopup(function (layer) {
+    return L.Util.template('<p>PIN14: {Pin14}<br>Building Class: {BLDGClass}<br>Neighborhood: {NBHD}<br>Building Age: {BldgAge}<br>2012 Assessed Value: {TotalValue}<br>Building Sq Ft: {BldgSqft}</p>', layer.feature.properties);
+  });
+
+ // create the geocoding control and add it to the map
+    var searchControl = L.esri.Geocoding.geosearch().addTo(map);
+
+    // create an empty layer group to store the results and add it to the map
+    var results = L.layerGroup().addTo(map);
+
+    // listen for the results event and add every result to the map
+    searchControl.on("results", function(data) {
+        results.clearLayers();
+        for (var i = data.results.length - 1; i >= 0; i--) {
+            results.addLayer(L.marker(data.results[i].latlng));
+        }
+    });
+
+</script>
+
+</body>
+</html>
